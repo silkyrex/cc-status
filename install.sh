@@ -23,9 +23,10 @@ STATUS_SCRIPT="$HOME/.local/bin/cc-weekly-status.py"
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 mkdir -p "$HOME/.local/bin" "$HOME/.claude"
-cp "$REPO_DIR/cc-weekly-status.py" "$STATUS_SCRIPT"
-chmod +x "$STATUS_SCRIPT"
-echo "✓ Status script installed at $STATUS_SCRIPT"
+[ -f "$STATUS_SCRIPT" ] && [ ! -L "$STATUS_SCRIPT" ] && rm "$STATUS_SCRIPT"
+ln -sf "$REPO_DIR/cc-weekly-status.py" "$STATUS_SCRIPT"
+chmod +x "$REPO_DIR/cc-weekly-status.py"
+echo "✓ Status script symlinked at $STATUS_SCRIPT -> $REPO_DIR/cc-weekly-status.py"
 
 if [ -f "$SETTINGS" ]; then
   cp "$SETTINGS" "$SETTINGS.bak.$(date +%s)"

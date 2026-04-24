@@ -21,6 +21,11 @@ def fmt(n):
     if n >= 1_000: return f'{n/1_000:.0f}K'
     return str(n)
 
+def fmt_cost(n):
+    if n >= 10_000: return f'~${n/1000:.0f}K'
+    if n >= 1_000:  return f'~${n:.0f}'
+    return f'~${n:.1f}'
+
 def model_key(model):
     if 'opus' in model: return 'opus'
     if 'sonnet' in model: return 'sonnet'
@@ -80,7 +85,7 @@ def save_cache(by_day):
 
 def reset_countdown():
     pt = ZoneInfo('America/Los_Angeles')
-    anchor = datetime.datetime(2026, 4, 23, 12, 0, tzinfo=pt)
+    anchor = datetime.datetime(2026, 4, 23, 12, 0, tzinfo=pt)  # update if /usage shows a different reset time
     delta = (anchor - datetime.datetime.now(pt)).total_seconds()
     delta %= 7 * 86400
     pct_used = (1 - delta / (7 * 86400)) * 100
@@ -131,20 +136,27 @@ try:
     w_cache_w = sum(by_day[d].get('cache_w', 0) for d in dates)
 
     t = by_day.get(today, {'out': 0, 'opus': 0, 'sonnet': 0, 'cost': 0.0})
-    t_out, t_opus, t_sonnet, t_cost = t['out'], t['opus'], t.get('sonnet', 0), t.get('cost', 0.0)
+    t_out, t_opus, t_cost = t['out'], t['opus'], t.get('cost', 0.0)
 
-    w_pct = (w_opus / w_out * 100) if w_out else 0
+    w_pct      = (w_opus / w_out * 100) if w_out else 0
+    t_opus_pct = int(t_opus / t_out * 100) if t_out else 0
     cache_ratio = int(w_cache_r / w_cache_w) if w_cache_w else 0
-    cache_str = f'  cache {cache_ratio}x' if cache_ratio else ''
-    snt_str = f'  snt {fmt(t_sonnet)}' if t_sonnet else ''
-    ctx_str = f'  ctx {ctx_pct:.0f}%' if ctx_pct is not None else ''
+
+    td_cost_str = fmt_cost(t_cost) if t_cost >= 0.05 else ''
+    td_mix_str  = f' o{t_opus_pct}%' if t_out else ''
+    ctx_str     = f' ctx {ctx_pct:.0f}%' if ctx_pct is not None else ''
     if ctx_pct is not None:
         try: Path('/tmp/claude-ctx-pct.txt').write_text(str(ctx_pct))
         except: pass
     reset_str, pct_used = reset_countdown()
-    pace_str = f'  ~${w_cost / (pct_used / 100):.0f}/wk' if pct_used >= 10 else ''
-    td_cost_str = f'  ~${t_cost:.1f}' if t_cost >= 0.05 else ''
-    token_line = f'7d: {fmt(w_out)}  ~${w_cost:.0f}  opus {w_pct:.0f}%  |  td: {fmt(t_out)}  opus {fmt(t_opus)}{snt_str}{td_cost_str}{ctx_str}  |  {reset_str}{pace_str}{cache_str}'
+    pace_str  = f'  {fmt_cost(w_cost / (pct_used / 100))}/wk' if pct_used >= 10 else ''
+    cache_str = f'  c{cache_ratio}x' if cache_ratio else ''
+
+    token_line = (
+        f'7d: {fmt_cost(w_cost)} ({fmt(w_out)}) o{w_pct:.0f}%'
+        f'  |  td: {td_cost_str}{td_mix_str}{ctx_str}'
+        f'  |  {reset_str}{pace_str}{cache_str}'
+    )
     pomo = pomo_status()
     print(f'{pomo}  |  {token_line}' if pomo else token_line)
 except Exception as e:
