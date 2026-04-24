@@ -79,7 +79,7 @@ Your Claude Code `/usage` dialog shows something like:
 > Current week (all models)
 > Resets Apr 23 at 12pm (America/Los_Angeles)
 
-Set the `anchor` to that date/time and `ZoneInfo` to that timezone. Any single occurrence works — the script takes the delta modulo 7 days, so it auto-rolls forward each week.
+Set the `anchor` to that date/time and `ZoneInfo` to that timezone (line 88 in `cc-weekly-status.py`). Any single occurrence works — the script takes the delta modulo 7 days, so it auto-rolls forward each week.
 
 ## How token counting works
 
