@@ -89,7 +89,7 @@ def reset_countdown():
     delta = (anchor - datetime.datetime.now(pt)).total_seconds()
     delta %= 7 * 86400
     pct_used = (1 - delta / (7 * 86400)) * 100
-    return f'{int(delta // 86400)}d{int((delta % 86400) // 3600):02d}h {pct_used:.0f}%', pct_used
+    return f'{int(delta // 86400)}d{int((delta % 86400) // 3600):02d}h', pct_used
 
 
 def pomo_status():
@@ -116,6 +116,7 @@ def pomo_status():
 try:
     import sys
     ctx_pct = None
+    stdin_data = {}
     try:
         stdin_data = json.loads(sys.stdin.read())
         ctx_pct = stdin_data.get('context_window', {}).get('used_percentage')
@@ -151,11 +152,15 @@ try:
     reset_str, pct_used = reset_countdown()
     pace_str  = f'  {fmt_cost(w_cost / (pct_used / 100))}/wk' if pct_used >= 10 else ''
     cache_str = f'  c{cache_ratio}x' if cache_ratio else ''
+    w_pct_q  = (stdin_data.get('rate_limits') or {}).get('seven_day', {}).get('used_percentage')
+    week_str = f'  w{w_pct_q:.0f}%' if w_pct_q is not None else ''
+    s_pct = (stdin_data.get('rate_limits') or {}).get('five_hour', {}).get('used_percentage')
+    session_str = f'  s{s_pct:.0f}%' if s_pct is not None else ''
 
     token_line = (
         f'7d: {fmt_cost(w_cost)} ({fmt(w_out)}) o{w_pct:.0f}%'
         f'  |  td: {td_cost_str}{td_mix_str}{ctx_str}'
-        f'  |  {reset_str}{pace_str}{cache_str}'
+        f'  |  {reset_str}{week_str}{pace_str}{cache_str}{session_str}'
     )
     pomo = pomo_status()
     print(f'{pomo}  |  {token_line}' if pomo else token_line)
