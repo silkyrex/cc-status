@@ -85,7 +85,7 @@ def save_cache(by_day):
 
 def reset_countdown():
     pt = ZoneInfo('America/Los_Angeles')
-    anchor = datetime.datetime(2026, 4, 23, 12, 0, tzinfo=pt)  # update if /usage shows a different reset time
+    anchor = datetime.datetime(2026, 5, 4, 7, 59, tzinfo=pt)  # update if /usage shows a different reset time
     delta = (anchor - datetime.datetime.now(pt)).total_seconds()
     delta %= 7 * 86400
     pct_used = (1 - delta / (7 * 86400)) * 100
@@ -150,7 +150,7 @@ try:
         try: Path('/tmp/claude-ctx-pct.txt').write_text(str(ctx_pct))
         except: pass
     reset_str, pct_used = reset_countdown()
-    pace_str  = f'  {fmt_cost(w_cost / (pct_used / 100))}/wk' if pct_used >= 10 else ''
+    pace_str  = f'  {fmt_cost(w_cost)}/wk'
     cache_str = f'  c{cache_ratio}x' if cache_ratio else ''
     w_pct_q  = (stdin_data.get('rate_limits') or {}).get('seven_day', {}).get('used_percentage')
     week_str = f'  w{w_pct_q:.0f}%' if w_pct_q is not None else ''
