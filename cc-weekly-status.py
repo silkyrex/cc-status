@@ -150,7 +150,23 @@ try:
         try: Path('/tmp/claude-ctx-pct.txt').write_text(str(ctx_pct))
         except: pass
     reset_str, pct_used = reset_countdown()
-    pace_str  = f'  {fmt_cost(w_cost)}/wk'
+
+    # Bot equity slot: reads /tmp/trading.state.json synced from droplet every 60s.
+    # Stale (>5min old) or missing -> slot collapses silently.
+    # Replaces the old pace_str slot (which duplicated the 7d number).
+    bot_str = ''
+    try:
+        sf = Path('/tmp/trading.state.json')
+        if sf.exists():
+            s = json.loads(sf.read_text())
+            age = time.time() - s.get('ts', 0)
+            if age < 300:
+                eq = s['equity']
+                pct = s['day_pct']
+                sign = '+' if pct >= 0 else ''
+                bot_str = f'  bot ${eq:,.0f} {sign}{pct:.1f}%'
+    except Exception:
+        pass
     cache_str = f'  c{cache_ratio}x' if cache_ratio else ''
     w_pct_q  = (stdin_data.get('rate_limits') or {}).get('seven_day', {}).get('used_percentage')
     week_str = f'  w{w_pct_q:.0f}%' if w_pct_q is not None else ''
@@ -160,7 +176,7 @@ try:
     token_line = (
         f'7d: {fmt_cost(w_cost)} ({fmt(w_out)}) o{w_pct:.0f}%'
         f'  |  td: {td_cost_str}{td_mix_str}{ctx_str}'
-        f'  |  {reset_str}{week_str}{pace_str}{cache_str}{session_str}'
+        f'  |  {reset_str}{week_str}{bot_str}{cache_str}{session_str}'
     )
     pomo = pomo_status()
     print(f'{pomo}  |  {token_line}' if pomo else token_line)
