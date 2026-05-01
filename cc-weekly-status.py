@@ -152,9 +152,9 @@ try:
     reset_str, pct_used = reset_countdown()
 
     # Bot equity slot: reads /tmp/trading.state.json synced from droplet every 60s.
-    # Stale (>5min old) or missing -> slot collapses silently.
-    # Replaces the old pace_str slot (which duplicated the 7d number).
-    bot_str = ''
+    # Renders as its own block ('  |  $X +Y.Y%') when fresh; empty when stale
+    # (>5min) or missing so the trailing pipe collapses cleanly.
+    bot_block = ''
     try:
         sf = Path('/tmp/trading.state.json')
         if sf.exists():
@@ -164,7 +164,7 @@ try:
                 eq = s['equity']
                 pct = s['day_pct']
                 sign = '+' if pct >= 0 else ''
-                bot_str = f'  bot ${eq:,.0f} {sign}{pct:.1f}%'
+                bot_block = f'  |  ${eq:,.0f} {sign}{pct:.1f}%'
     except Exception:
         pass
     cache_str = f'  c{cache_ratio}x' if cache_ratio else ''
@@ -176,7 +176,8 @@ try:
     token_line = (
         f'7d: {fmt_cost(w_cost)} ({fmt(w_out)}) o{w_pct:.0f}%'
         f'  |  td: {td_cost_str}{td_mix_str}{ctx_str}'
-        f'  |  {reset_str}{week_str}{bot_str}{cache_str}{session_str}'
+        f'  |  {reset_str}{week_str}{cache_str}{session_str}'
+        f'{bot_block}'
     )
     pomo = pomo_status()
     print(f'{pomo}  |  {token_line}' if pomo else token_line)
