@@ -181,5 +181,20 @@ try:
     )
     pomo = pomo_status()
     print(f'{pomo}  |  {token_line}' if pomo else token_line)
+
+    history = Path.home() / '.claude' / 'cc-status-history.jsonl'
+    try:
+        with open(history, 'a') as f:
+            f.write(json.dumps({
+                'ts': datetime.datetime.now().isoformat(),
+                'w_out': w_out,
+                'w_cost': round(w_cost, 2),
+                'w_opus_pct': round(w_pct, 1),
+                't_out': t_out,
+                't_opus': t_opus,
+                'cache_x': cache_ratio,
+                'ctx_pct': round(ctx_pct, 1) if ctx_pct is not None else None,
+            }) + '\n')
+    except: pass
 except Exception as e:
     print(f'cc-status err: {e}')
