@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+"""Weekly KPI trend for cc-status throughput efficiency.
+
+Usage: cc-kpi [--weeks N]
+
+Lower eff/M = more efficient (fewer dollars per M output tokens).
+"""
+import argparse
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import kpi_db
+
+
+def main():
+    parser = argparse.ArgumentParser(description='cc-status weekly KPI trend')
+    parser.add_argument('--weeks', type=int, default=12, metavar='N',
+                        help='Number of weeks to show (default: 12)')
+    args = parser.parse_args()
+
+    kpi_db.init_db()
+    rows = kpi_db.weekly_report(args.weeks)
+
+    if not rows:
+        print('No data yet. Run backfill_kpi.py or wait for the status line to populate.')
+        return
+
+    header = f"{'Week':<12}  {'eff/M':>7}  {'cache':>6}  {'7d cost':>9}  {'days':>4}"
+    print(header)
+    print('-' * len(header))
+
+    prev_eff = None
+    for r in rows:
+        eff = r['avg_eff_per_m']
+        cache = r['avg_cache_x']
+        cost = r['week_cost']
+        days = r['days']
+        week = r['week_start']
+
+        eff_str = f'${eff:.0f}' if eff else 'n/a'
+        cache_str = f'{cache:.0f}x' if cache else 'n/a'
+        cost_str = f'${cost:,.0f}' if cost else 'n/a'
+
+        trend = ''
+        if prev_eff and eff:
+            trend = ' ↓' if eff < prev_eff else ' ↑' if eff > prev_eff else ' ='
+        prev_eff = eff
+
+        print(f'{week:<12}  {eff_str:>7}  {cache_str:>6}  {cost_str:>9}  {days:>4}{trend}')
+
+    print()
+    print('eff/M = total 7d cost / 7d output tokens (M). Lower = more efficient.')
+
+
+if __name__ == '__main__':
+    main()

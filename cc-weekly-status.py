@@ -4,17 +4,18 @@
 Reads assistant-message usage from session JSONLs in ~/.claude/projects/.
 Caches to ~/.claude/cc-burn-cache.json (TTL 90s) since full scan is ~2s.
 """
-import json, datetime, time
+import json, datetime, sys, time
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+_script_dir = Path(__file__).resolve().parent
+sys.path.insert(0, str(_script_dir.parent / 'productivity' / 'agent-ops'))
+sys.path.insert(0, str(_script_dir))
+import claude_rates
+import kpi_db
+
 CACHE = Path.home() / '.claude' / 'cc-burn-cache.json'
 TTL = 90  # seconds
-
-OUT_RATE  = {'opus': 25,    'sonnet': 3,    'haiku': 0.8}
-IN_RATE   = {'opus': 15,    'sonnet': 3,    'haiku': 0.8}
-CW_RATE   = {'opus': 18.75, 'sonnet': 3.75, 'haiku': 1.0}
-CR_RATE   = {'opus': 1.5,   'sonnet': 0.3,  'haiku': 0.08}
 
 def fmt(n):
     if n >= 1_000_000: return f'{n/1_000_000:.1f}M'
@@ -26,11 +27,7 @@ def fmt_cost(n):
     if n >= 1_000:  return f'~${n:.0f}'
     return f'~${n:.1f}'
 
-def model_key(model):
-    if 'opus' in model: return 'opus'
-    if 'sonnet' in model: return 'sonnet'
-    if 'haiku' in model: return 'haiku'
-    return None
+model_key = claude_rates.model_key
 
 def scan():
     base = Path.home() / '.claude' / 'projects'
@@ -63,12 +60,7 @@ def scan():
                     if mk == 'opus':   bucket['opus']   += out
                     if mk == 'sonnet': bucket['sonnet'] += out
                     if mk:
-                        bucket['cost'] += (
-                            out     * OUT_RATE[mk] / 1_000_000 +
-                            inp     * IN_RATE[mk]  / 1_000_000 +
-                            cache_w * CW_RATE[mk]  / 1_000_000 +
-                            cache_r * CR_RATE[mk]  / 1_000_000
-                        )
+                        bucket['cost'] += claude_rates.turn_cost(u, mk)
         except: pass
     return by_day
 
@@ -191,10 +183,22 @@ try:
                 'w_cost': round(w_cost, 2),
                 'w_opus_pct': round(w_pct, 1),
                 't_out': t_out,
+                't_cost': round(t_cost, 2),
                 't_opus': t_opus,
                 'cache_x': cache_ratio,
                 'ctx_pct': round(ctx_pct, 1) if ctx_pct is not None else None,
             }) + '\n')
+    except: pass
+    try:
+        kpi_db.init_db()
+        kpi_db.upsert_today({
+            'w_cost': w_cost,
+            'w_out': w_out,
+            't_cost': t_cost,
+            't_out': t_out,
+            'cache_x': cache_ratio,
+            'w_opus_pct': w_pct,
+        })
     except: pass
 except Exception as e:
     print(f'cc-status err: {e}')
