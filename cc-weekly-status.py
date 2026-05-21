@@ -171,7 +171,11 @@ try:
         burn_block += f' · {td_block}'
 
     cache_block = f'c{cache_ratio}x' if cache_ratio else ''
-    ctx_block   = f'ctx{ctx_pct:.0f}%' if ctx_pct is not None else ''
+    if ctx_pct is not None:
+        ctx_emoji = '🔴' if ctx_pct >= 40 else '🟠' if ctx_pct >= 30 else '🟡' if ctx_pct >= 20 else '🟢'
+        ctx_block = f'{ctx_emoji}{ctx_pct:.0f}%'
+    else:
+        ctx_block = ''
     w_free_str  = f'↑w{100 - w_pct_q:.0f}%' if w_pct_q is not None else ''
     trailing    = ' '.join(p for p in [w_free_str, f'↺{reset_str}'] if p)
 

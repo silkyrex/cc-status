@@ -3,7 +3,7 @@
 Claude Code status line with **accurate full cost tracking** and throughput efficiency metrics.
 
 ```
-c15x ctx13%  |  7d:~$3795 @$140/M · td:~$525.1 @$137/M  |  ↑w42% ↺4d10h
+c15x 🟢13%  |  7d:~$3795 @$140/M · td:~$525.1 @$137/M  |  ↑w42% ↺4d10h
 ```
 
 If a Pomodoro session is active, a `🍅 P1 14m  |  ` prefix is added.
@@ -13,7 +13,7 @@ If a Pomodoro session is active, a `🍅 P1 14m  |  ` prefix is added.
 | Field | Meaning |
 |---|---|
 | `c15x` | Cache reuse ratio: cache reads ÷ cache writes. Higher = more input cost amortized. Near 1x = cache not warming. |
-| `ctx13%` | Current session context window usage. Hidden when no CC stdin. |
+| `🟢13%` | Current session context window %. Color-coded: 🟢 <20% · 🟡 20–30% · 🟠 30–40% · 🔴 ≥40%. Hidden when no CC stdin. |
 | `7d:~$3795` | 7-day full cost — output + input + cache writes + cache reads, all at correct per-model rates. |
 | `@$140/M` | **Throughput KPI**: 7d cost ÷ 7d output tokens (per million). Lower = more efficient. Watch this trend down over time. |
 | `td:~$525.1` | Today's full cost (hidden if < $0.05). |
@@ -65,7 +65,7 @@ Restart Claude Code.
 ```bash
 echo '{"context_window":{"used_percentage":13},"rate_limits":{"seven_day":{"used_percentage":58}}}' \
   | python3 ~/.local/bin/cc-weekly-status.py
-# c15x ctx13%  |  7d:~$3795 @$140/M · td:~$525.1 @$137/M  |  ↑w42% ↺4d10h
+# c15x 🟢13%  |  7d:~$3795 @$140/M · td:~$525.1 @$137/M  |  ↑w42% ↺4d10h
 ```
 
 ## Weekly KPI trend (`cc-kpi`)
