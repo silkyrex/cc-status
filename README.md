@@ -18,7 +18,7 @@ If a Pomodoro session is active, a `🍅 P1 14m  |  ` prefix is added.
 | `@$140/M` | **Throughput KPI**: 7d cost ÷ 7d output tokens (per million). Lower = more efficient. Watch this trend down over time. |
 | `td:~$525.1` | Today's full cost (hidden if < $0.05). |
 | `@$137/M` | Today's throughput efficiency. Compare to 7d rate: lower today = running hot; higher today = cache/model mix less efficient. |
-| `↑w42%` | Weekly token budget remaining (free, not used). Hidden when CC rate limits aren't injected. |
+| `⚪↑w42% ↺4d10h 🚀` | Weekly token budget remaining (free, not used). Color-coded: ⚪ ≥30% · 🟡 20–29% · 🔴 <20%. Pace emoji: 🚀 ahead of pace · ✅ on pace · 🔥 burning faster than the week is moving, likely to run out before reset · 💀 critical, more than half the week left but more than half the budget gone. Hidden when CC rate limits aren't injected. |
 | `↺4d10h` | Time until weekly token reset. |
 
 If a trading bot state file is fresh (`/tmp/trading.state.json` < 5 min old), a trailing `  |  $9,999 +1.2%` block is appended.

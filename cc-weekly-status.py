@@ -81,7 +81,7 @@ def reset_countdown():
     delta = (anchor - datetime.datetime.now(pt)).total_seconds()
     delta %= 7 * 86400
     pct_used = (1 - delta / (7 * 86400)) * 100
-    return f'{int(delta // 86400)}d{int((delta % 86400) // 3600):02d}h', pct_used
+    return f'{int(delta // 86400)}d{int((delta % 86400) // 3600):02d}h', pct_used, delta
 
 
 def pomo_status():
@@ -139,7 +139,7 @@ try:
     if ctx_pct is not None:
         try: Path('/tmp/claude-ctx-pct.txt').write_text(str(ctx_pct))
         except: pass
-    reset_str, pct_used = reset_countdown()
+    reset_str, pct_used, delta = reset_countdown()
 
     # Bot equity slot: reads /tmp/trading.state.json synced from droplet every 60s.
     # Renders as its own block ('  |  $X +Y.Y%') when fresh; empty when stale
@@ -176,8 +176,17 @@ try:
         ctx_block = f'{ctx_emoji}{ctx_pct:.0f}%'
     else:
         ctx_block = ''
-    w_free_str  = f'↑w{100 - w_pct_q:.0f}%' if w_pct_q is not None else ''
-    trailing    = ' '.join(p for p in [w_free_str, f'↺{reset_str}'] if p)
+    if w_pct_q is not None:
+        w_free = 100 - w_pct_q
+        w_color = '🔴' if w_free < 20 else '🟡' if w_free < 30 else '⚪'
+        w_free_str = f'{w_color}↑w{w_free:.0f}%'
+        time_free_pct = delta / (7 * 86400) * 100
+        pace_ratio = w_free / time_free_pct if time_free_pct else 0
+        pace_emoji = '🚀' if pace_ratio > 1.1 else '✅' if pace_ratio >= 0.9 else '🔥' if pace_ratio >= 0.5 else '💀'
+    else:
+        w_free_str = ''
+        pace_emoji = ''
+    trailing    = ' '.join(p for p in [w_free_str, f'↺{reset_str}', pace_emoji] if p)
 
     block1 = ' '.join(p for p in [cache_block, ctx_block] if p)
     token_line = f'{block1}  |  {burn_block}  |  {trailing}{bot_block}'
