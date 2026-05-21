@@ -136,8 +136,6 @@ try:
     cache_ratio = int(w_cache_r / w_cache_w) if w_cache_w else 0
 
     td_cost_str = fmt_cost(t_cost) if t_cost >= 0.05 else ''
-    td_mix_str  = f' o{t_opus_pct}%' if t_out else ''
-    ctx_str     = f' ctx {ctx_pct:.0f}%' if ctx_pct is not None else ''
     if ctx_pct is not None:
         try: Path('/tmp/claude-ctx-pct.txt').write_text(str(ctx_pct))
         except: pass
@@ -159,18 +157,26 @@ try:
                 bot_block = f'  |  ${eq:,.0f} {sign}{pct:.1f}%'
     except Exception:
         pass
-    cache_str = f'  c{cache_ratio}x' if cache_ratio else ''
-    w_pct_q  = (stdin_data.get('rate_limits') or {}).get('seven_day', {}).get('used_percentage')
-    week_str = f'  w{w_pct_q:.0f}%' if w_pct_q is not None else ''
-    s_pct = (stdin_data.get('rate_limits') or {}).get('five_hour', {}).get('used_percentage')
-    session_str = f'  s{s_pct:.0f}%' if s_pct is not None else ''
+    w_pct_q = (stdin_data.get('rate_limits') or {}).get('seven_day', {}).get('used_percentage')
 
-    token_line = (
-        f'7d: {fmt_cost(w_cost)} ({fmt(w_out)}) o{w_pct:.0f}%'
-        f'  |  td: {td_cost_str}{td_mix_str}{ctx_str}'
-        f'  |  {reset_str}{week_str}{cache_str}{session_str}'
-        f'{bot_block}'
-    )
+    # Throughput efficiency: cost per M output tokens
+    eff_7d = int(w_cost / (w_out / 1_000_000)) if w_out else None
+    eff_td = int(t_cost / (t_out / 1_000_000)) if (t_out and t_cost >= 0.05) else None
+
+    eff_7d_str = f' @${eff_7d}/M' if eff_7d else ''
+    eff_td_str = f' @${eff_td}/M' if eff_td else ''
+    td_block   = f'td:{td_cost_str}{eff_td_str}' if td_cost_str else ''
+    burn_block = f'7d:{fmt_cost(w_cost)}{eff_7d_str}'
+    if td_block:
+        burn_block += f' · {td_block}'
+
+    cache_block = f'c{cache_ratio}x' if cache_ratio else ''
+    ctx_block   = f'ctx{ctx_pct:.0f}%' if ctx_pct is not None else ''
+    w_free_str  = f'↑w{100 - w_pct_q:.0f}%' if w_pct_q is not None else ''
+    trailing    = ' '.join(p for p in [w_free_str, f'↺{reset_str}'] if p)
+
+    block1 = ' '.join(p for p in [cache_block, ctx_block] if p)
+    token_line = f'{block1}  |  {burn_block}  |  {trailing}{bot_block}'
     pomo = pomo_status()
     print(f'{pomo}  |  {token_line}' if pomo else token_line)
 
