@@ -9,7 +9,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 _script_dir = Path(__file__).resolve().parent
-sys.path.insert(0, str(_script_dir.parent / 'productivity' / 'agent-ops'))
+sys.path.insert(0, str(_script_dir.parent / 'ai' / 'productivity' / 'agent-ops'))
 sys.path.insert(0, str(_script_dir))
 import claude_rates
 import kpi_db
