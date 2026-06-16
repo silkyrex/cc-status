@@ -172,7 +172,7 @@ try:
 
     cache_block = f'c{cache_ratio}x' if cache_ratio else ''
     if ctx_pct is not None:
-        ctx_emoji = '🔴' if ctx_pct >= 40 else '🟠' if ctx_pct >= 30 else '🟡' if ctx_pct >= 20 else '🟢'
+        ctx_emoji = '🔴' if ctx_pct >= 70 else '🟠' if ctx_pct >= 60 else '🟡' if ctx_pct >= 50 else '🟢'
         ctx_block = f'{ctx_emoji}{ctx_pct:.0f}%'
     else:
         ctx_block = ''

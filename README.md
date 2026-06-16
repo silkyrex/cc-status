@@ -13,7 +13,7 @@ If a Pomodoro session is active, a `🍅 P1 14m  |  ` prefix is added.
 | Field | Meaning |
 |---|---|
 | `c15x` | Cache reuse ratio: cache reads ÷ cache writes. Higher = more input cost amortized. Near 1x = cache not warming. |
-| `🟢13%` | Current session context window %. Color-coded: 🟢 <20% · 🟡 20–30% · 🟠 30–40% · 🔴 ≥40%. Hidden when no CC stdin. |
+| `🟢13%` | Current session context window %. Color-coded: 🟢 <50% · 🟡 50–60% · 🟠 60–70% · 🔴 ≥70%. Hidden when no CC stdin. |
 | `7d:~$3795` | 7-day full cost — output + input + cache writes + cache reads, all at correct per-model rates. |
 | `@$140/M` | **Throughput KPI**: 7d cost ÷ 7d output tokens (per million). Lower = more efficient. Watch this trend down over time. |
 | `td:~$525.1` | Today's full cost (hidden if < $0.05). |
