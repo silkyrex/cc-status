@@ -1,0 +1,6 @@
+# Python bytecode
+__pycache__/
+*.pyc
+
+# Gortex / understand-anything tool cache
+.understand-anything/
