@@ -16,6 +16,7 @@ import kpi_db
 
 CACHE = Path.home() / '.claude' / 'cc-burn-cache.json'
 TTL = 90  # seconds
+SUB_MONTHLY = 100  # Claude Max 5x subscription $/mo; value ratio = run-rate / this
 
 def fmt(n):
     if n >= 1_000_000: return f'{n/1_000_000:.1f}M'
@@ -171,6 +172,8 @@ try:
         burn_block += f' · {td_block}'
 
     cache_block = f'c{cache_ratio}x' if cache_ratio else ''
+    val_ratio = int((w_cost / 7 * 30) / SUB_MONTHLY) if w_cost else 0
+    val_block = f'💎{val_ratio}x' if val_ratio else ''
     if ctx_pct is not None:
         ctx_emoji = '🔴' if ctx_pct >= 70 else '🟠' if ctx_pct >= 60 else '🟡' if ctx_pct >= 50 else '🟢'
         ctx_block = f'{ctx_emoji}{ctx_pct:.0f}%'
@@ -190,6 +193,8 @@ try:
 
     block1 = ' '.join(p for p in [cache_block, ctx_block] if p)
     token_line = f'{block1}  |  {burn_block}  |  {trailing}{bot_block}'
+    if val_block:
+        token_line += f'  |  {val_block}'
     pomo = pomo_status()
     print(f'{pomo}  |  {token_line}' if pomo else token_line)
 

@@ -3,7 +3,7 @@
 Claude Code status line with **accurate full cost tracking** and throughput efficiency metrics.
 
 ```
-c15x 🟢13%  |  7d:~$3795 @$140/M · td:~$525.1 @$137/M  |  ↑w42% ↺4d10h
+c15x 🟢13%  |  7d:~$3795 @$140/M · td:~$525.1 @$137/M  |  ↑w42% ↺4d10h  |  💎162x
 ```
 
 If a Pomodoro session is active, a `🍅 P1 14m  |  ` prefix is added.
@@ -20,6 +20,7 @@ If a Pomodoro session is active, a `🍅 P1 14m  |  ` prefix is added.
 | `@$137/M` | Today's throughput efficiency. Compare to 7d rate: lower today = running hot; higher today = cache/model mix less efficient. |
 | `⚪↑w42% ↺4d10h 🚀` | Weekly token budget remaining (free, not used). Color-coded: ⚪ ≥30% · 🟡 20–29% · 🔴 <20%. Pace emoji: 🚀 ahead of pace · ✅ on pace · 🔥 burning faster than the week is moving, likely to run out before reset · 💀 critical, more than half the week left but more than half the budget gone. Hidden when CC rate limits aren't injected. |
 | `↺4d10h` | Time until weekly token reset. |
+| `💎162x` | Subscription value ratio: monthly run-rate (7d cost ÷ 7 × 30) ÷ your plan's monthly price. How many times over the flat sub fee you'd be paying at pay-as-you-go API rates. Set `SUB_MONTHLY` near the top of `cc-weekly-status.py` to your plan price ($100 Max 5x, $200 Max 20x, $20 Pro). Hidden when 7d cost is 0. |
 
 If a trading bot state file is fresh (`/tmp/trading.state.json` < 5 min old), a trailing `  |  $9,999 +1.2%` block is appended.
 
@@ -65,7 +66,7 @@ Restart Claude Code.
 ```bash
 echo '{"context_window":{"used_percentage":13},"rate_limits":{"seven_day":{"used_percentage":58}}}' \
   | python3 ~/.local/bin/cc-weekly-status.py
-# c15x 🟢13%  |  7d:~$3795 @$140/M · td:~$525.1 @$137/M  |  ↑w42% ↺4d10h
+# c15x 🟢13%  |  7d:~$3795 @$140/M · td:~$525.1 @$137/M  |  ↑w42% ↺4d10h  |  💎162x
 ```
 
 ## Weekly KPI trend (`cc-kpi`)
